@@ -5,20 +5,6 @@
  */
 
 /**
- * Implements hook_menu().
- */
-/* function ghost_term_menu() {
-  $items['admin/config/search/settings/build'] = array(
-    'title' => 'Remove Ghost Terms',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('ghost_term_start_confirm'),
-    'access arguments' => array('administer search'),
-    'type' => MENU_VISIBLE_IN_BREADCRUMB,
-  );
-  return $items;
-} */
-
-/**
  * Implements hook_form_FORM_ID_alter().
  */
 function ghost_term_form_search_admin_settings_alter(&$form, &$form_state, $form_id) {
@@ -77,7 +63,7 @@ function _ghost_term_search_status() {
     ->fetchAllAssoc('tid', PDO::FETCH_ASSOC);
 	
 	array_walk($result, function(&$val, $key){
-		$val = $val['tid']; //print_r($val);
+		$val = $val['tid']; 
 	});
 	
 	
@@ -88,20 +74,3 @@ function _ghost_term_search_status() {
 	return array('remaining'=>true);
 	
 }
-
-/*
-SELECT * FROM `search_api_db_answer_index_field_programs` WHERE `value`=117
-
-SELECT * FROM `search_api_db_answer_index_field_programs` WHERE `value`=119
-
-SELECT * FROM `search_api_db_answer_index_field_programs` WHERE `value`=120
-
-SELECT * FROM `search_api_db_answer_index_field_programs` WHERE `value` NOT IN (SELECT tid FROM `taxonomy_term_data`);
-
-DELETE FROM `search_api_db_answer_index_field_programs` WHERE `value` NOT IN (SELECT tid FROM `taxonomy_term_data`);
-
-SELECT tid FROM `taxonomy_term_data`
-SELECT * FROM `taxonomy_term_data` WHERE tid IN (117, 119, 120);
-SELECT * FROM `taxonomy_term_hierarchy` WHERE tid IN (117, 119, 120);
-SELECT * FROM `taxonomy_index` WHERE tid IN (117, 119, 120);
-*/

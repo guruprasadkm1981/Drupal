@@ -1,11 +1,11 @@
 name = Ghost Term
-description = Interactively build the search index
+description = Remove ghost terms (Deleted Terms in federated search)
 core = 7.x
 dependencies[] = search
 configure = admin/config/search/settings
 
 ; Information added by drupal.org packaging script on 2020-10-09
-version = "7.x-1.x-dev"
+version = "7.x-1.x"
 core = "7.x"
 project = "ghost_term"
 datestamp = "1380625428"
