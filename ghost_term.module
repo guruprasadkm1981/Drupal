@@ -1,0 +1,107 @@
+<?php
+/**
+ * @file
+ * Rebuild the search index in a batch.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+/* function ghost_term_menu() {
+  $items['admin/config/search/settings/build'] = array(
+    'title' => 'Remove Ghost Terms',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ghost_term_start_confirm'),
+    'access arguments' => array('administer search'),
+    'type' => MENU_VISIBLE_IN_BREADCRUMB,
+  );
+  return $items;
+} */
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ghost_term_form_search_admin_settings_alter(&$form, &$form_state, $form_id) {
+  $stats = _ghost_term_search_status();
+
+  $form['status']['reindex'] = array(
+    '#type' => 'submit',
+    '#value' => t('Remove Ghost Terms'),
+    '#submit' => array('ghost_term_settings_form_submit'),
+    '#disabled' => ($stats['remaining'] == 0),
+  );
+}
+
+/**
+ * Implements submit handler, that sends the user to the confirmation page
+ */
+function ghost_term_settings_form_submit(&$form, &$form_state) {
+  $form_state['redirect'] = 'admin/config/search/settings/build';
+}
+
+/**
+ * Implements menu callback for the confirmation page.
+ */
+function ghost_term_start_confirm() {
+  return confirm_form(array(), t('This action will remove Ghost terms for Good! Shall we continue?'), 'admin/config/search/settings', t('This will take a while and will have a performance impact on your server and should usually be done step by step during cron runs.'), t('Start removing Ghost terms'), t('Cancel'));
+}
+
+/**
+ * Implements submit handler for the confirmation page.
+ */
+function ghost_term_start_confirm_submit(&$form, &$form_state) {
+  if ($form['confirm']) {
+    // Start the batch.
+    $batch = array(
+      'title' => t('Removing Ghost terms'),
+      'progress_message' => t('Processing.'),
+      'finished' => 'ghost_term_finished',
+    );
+    _ghost_term_search_status();
+
+    // Go back to the settings page when ready.
+    $form_state['redirect'] = 'admin/config/search/settings';
+  }
+}
+
+/**
+ * Gather status information about the search index.
+ *
+ * @see search_admin_settings()
+ */
+function _ghost_term_search_status() {
+
+  $result = db_select('taxonomy_term_data', 'ttd')
+    ->fields('ttd', array('tid'))
+    ->execute()
+    ->fetchAllAssoc('tid', PDO::FETCH_ASSOC);
+	
+	array_walk($result, function(&$val, $key){
+		$val = $val['tid']; //print_r($val);
+	});
+	
+	
+    db_delete('search_api_db_answer_index_field_programs')	
+		->condition('value', $result, "NOT IN")
+		->execute();
+		
+	return array('remaining'=>true);
+	
+}
+
+/*
+SELECT * FROM `search_api_db_answer_index_field_programs` WHERE `value`=117
+
+SELECT * FROM `search_api_db_answer_index_field_programs` WHERE `value`=119
+
+SELECT * FROM `search_api_db_answer_index_field_programs` WHERE `value`=120
+
+SELECT * FROM `search_api_db_answer_index_field_programs` WHERE `value` NOT IN (SELECT tid FROM `taxonomy_term_data`);
+
+DELETE FROM `search_api_db_answer_index_field_programs` WHERE `value` NOT IN (SELECT tid FROM `taxonomy_term_data`);
+
+SELECT tid FROM `taxonomy_term_data`
+SELECT * FROM `taxonomy_term_data` WHERE tid IN (117, 119, 120);
+SELECT * FROM `taxonomy_term_hierarchy` WHERE tid IN (117, 119, 120);
+SELECT * FROM `taxonomy_index` WHERE tid IN (117, 119, 120);
+*/
