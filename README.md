@@ -1,5 +1,5 @@
-# Drupal CMS
-# Version 7.X
+# Drupal CMS V.7.X.X
+# Version 7.X.X
 # Module Name: Ghost Term
 # Git URL: https://github.com/guruprasadkm1981/Ghost-Term
 
